@@ -1,0 +1,11 @@
+{
+  "domain": "vicuna_conversation",
+  "name": "Vicuna Conversation",
+  "codeowners": ["@drndos"],
+  "config_flow": true,
+  "dependencies": ["conversation"],
+  "documentation": "https://github.com/drndos/hass-vicuna-conversation",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": ["openai==0.27.2"]
+}
