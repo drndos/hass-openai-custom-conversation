@@ -63,7 +63,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
     """
     openai.api_key = data[CONF_API_KEY]
     openai.api_base = data[CONF_BASE_URL]
-    await hass.async_add_executor_job(partial(openai.Engine.list, request_timeout=10))
+    await hass.async_add_executor_job(partial(openai.Model.list, request_timeout=10))
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
