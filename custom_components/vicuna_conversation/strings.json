@@ -3,7 +3,8 @@
     "step": {
       "user": {
         "data": {
-          "api_key": "[%key:common::config_flow::data::api_key%]"
+          "api_key": "[%key:common::config_flow::data::api_key%]",
+          "base_url": "[%key:common::config_flow::data::base_url%]"
         }
       }
     },
@@ -21,8 +22,7 @@
           "model": "Completion Model",
           "max_tokens": "Maximum tokens to return in response",
           "temperature": "Temperature",
-          "top_p": "Top P",
-          "base_url": "Base URL"
+          "top_p": "Top P"
         }
       }
     }
