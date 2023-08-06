@@ -73,7 +73,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
     @property
     def attribution(self):
         """Return the attribution."""
-        return {"name": "Powered by Vicuna", "url": "https://vicuna.lmsys.org/"}
+        return {"name": "Powered by Custom LLM", "url": "https://github.com/drndos/hass-openai-custom-conversation"}
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
@@ -126,7 +126,7 @@ class OpenAIAgent(conversation.AbstractConversationAgent):
             intent_response = intent.IntentResponse(language=user_input.language)
             intent_response.async_set_error(
                 intent.IntentResponseErrorCode.UNKNOWN,
-                f"Sorry, I had a problem talking to Vicuna: {err}",
+                f"Sorry, I had a problem talking to Custom OpenAI compatible server: {err}",
             )
             return conversation.ConversationResult(
                 response=intent_response, conversation_id=conversation_id
