@@ -1,5 +1,5 @@
 {
-  "name": "Vicuna Conversation",
+  "name": "Custom OpenAI Conversation",
   "render_readme": true,
-  "homeassistant": "2023.4.0"
+  "homeassistant": "2023.8.0"
 }
