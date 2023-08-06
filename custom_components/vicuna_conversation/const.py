@@ -1,6 +1,6 @@
 """Constants for the OpenAI Conversation integration."""
 
-DOMAIN = "vicuna_conversation"
+DOMAIN = "custom_openai_conversation"
 CONF_PROMPT = "prompt"
 DEFAULT_PROMPT = """This smart home is controlled by Home Assistant.
 
