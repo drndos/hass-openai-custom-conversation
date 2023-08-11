@@ -1,7 +1,9 @@
 # hass-openai-custom-conversation
+
 Conversation support for home assistant using local llm for example vicuna or something else
 
 How to setup your own local LLM for Home assistant:
+
 - Install local-ai
 - Setup model
 - Install hass-openai-custom-conversation

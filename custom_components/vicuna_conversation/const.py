@@ -33,3 +33,4 @@ CONF_TEMPERATURE = "temperature"
 DEFAULT_TEMPERATURE = 0.5
 CONF_BASE_URL = "base_url"
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
+DEFAULT_API_KEY = "sk-0000000000000000000"

@@ -1,12 +1,13 @@
 {
-  "domain": "custom_openai_conversation",
-  "name": "Custom OpenAI Conversation",
   "codeowners": ["@drndos"],
   "config_flow": true,
   "dependencies": ["conversation"],
   "documentation": "https://github.com/drndos/hass-openai-custom-conversation",
+  "domain": "custom_openai_conversation",
   "integration_type": "service",
   "iot_class": "local_polling",
-  "requirements": ["openai==0.27.2"],
-  "version": "0.7"
+  "issue_tracker": "https://github.com/drndos/hass-openai-custom-conversation/issues",
+  "name": "Custom OpenAI Conversation",
+  "requirements": ["openai==0.27.8"],
+  "version": "0.8"
 }
