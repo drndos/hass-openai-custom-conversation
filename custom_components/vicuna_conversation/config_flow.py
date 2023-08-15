@@ -28,6 +28,8 @@ from .const import (
     CONF_TEMPERATURE,
     CONF_TOP_P,
     CONF_BASE_URL,
+    DEFAULT_API_KEY,
+    DEFAULT_BASE_URL,
     DEFAULT_CHAT_MODEL,
     DEFAULT_MAX_TOKENS,
     DEFAULT_PROMPT,
@@ -40,8 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_API_KEY): str,
-        vol.Required(CONF_BASE_URL): str,
+        vol.Required(CONF_API_KEY, default=DEFAULT_API_KEY): str,
+        vol.Required(CONF_BASE_URL, default=DEFAULT_BASE_URL): str,
     }
 )
 
@@ -52,6 +54,8 @@ DEFAULT_OPTIONS = types.MappingProxyType(
         CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
         CONF_TOP_P: DEFAULT_TOP_P,
         CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+        CONF_API_KEY: DEFAULT_API_KEY,
+        CONF_BASE_URL: DEFAULT_BASE_URL,
     }
 )
 
