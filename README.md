@@ -10,3 +10,5 @@ How to setup your own local LLM for Home assistant:
 - Add custom component to your hass installation
 - Set first field to any string, set second field to the address of local-ai installation
 - Configure hass assist to use custom openai conversation as conversation agent, set options to contain instructions specific to your setup and model name
+
+Discussion here https://community.home-assistant.io/t/integration-with-localai/575238/13
