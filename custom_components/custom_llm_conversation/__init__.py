@@ -1,153 +1,75 @@
-"""The OpenAI Conversation integration."""
-from __future__ import annotations
-
-from functools import partial
+from typing import List, Dict, Any, Optional, Tuple
+import re
 import logging
-from typing import Literal
 
-import openai
-from openai import error
-
+import voluptuous as vol
+import homeassistant.components.conversation
 from homeassistant.components import conversation
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY, MATCH_ALL
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady, TemplateError
-from homeassistant.helpers import intent, template
-from homeassistant.util import ulid
+from homeassistant.core import Context
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import intent
 
 from .const import (
-    CONF_CHAT_MODEL,
-    CONF_MAX_TOKENS,
-    CONF_PROMPT,
-    CONF_TEMPERATURE,
-    CONF_TOP_P,
-    CONF_BASE_URL,
-    DEFAULT_CHAT_MODEL,
-    DEFAULT_MAX_TOKENS,
-    DEFAULT_PROMPT,
-    DEFAULT_TEMPERATURE,
-    DEFAULT_TOP_P,
-    DEFAULT_BASE_URL,
+    ATTR_RESPONSE_PARSER_START,
+    ATTR_RESPONSE_PARSER_END,
+    ATTR_FIRE_INTENT_NAME,
+    DEFAULT_PARSER_TOKEN,
+    DEFAULT_INTENT_NAME,
+    DOMAIN
 )
 
 _LOGGER = logging.getLogger(__name__)
 
+CONFIG_SCHEMA = vol.Schema({
+    DOMAIN: vol.Schema({
+        vol.Required(ATTR_RESPONSE_PARSER_START, default=DEFAULT_PARSER_TOKEN): cv.string,
+        vol.Required(ATTR_RESPONSE_PARSER_END, default=DEFAULT_PARSER_TOKEN): cv.string,
+        vol.Required(ATTR_FIRE_INTENT_NAME, default=DEFAULT_INTENT_NAME): cv.slugify
+    })
+}, extra=vol.ALLOW_EXTRA)
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up OpenAI Conversation from a config entry."""
-    openai.api_key = entry.data[CONF_API_KEY]
-    openai.api_base = entry.data[CONF_BASE_URL]
+async def async_setup(hass, config):
+    """Set up the openai_override component."""
 
-    try:
-        await hass.async_add_executor_job(
-            partial(openai.Model.list)
-        )
-    except error.AuthenticationError as err:
-        _LOGGER.error("Invalid API key: %s", err)
-        return False
-    except error.OpenAIError as err:
-        raise ConfigEntryNotReady(err) from err
+    from custom_components.custom_llm_conversation import OpenAIAgent
 
-    conversation.async_set_agent(hass, entry, OpenAIAgent(hass, entry))
-    return True
+    original = OpenAIAgent.async_process
 
+    async def async_process(self, user_input: conversation.ConversationInput) -> conversation.ConversationResult:
+        """Handle OpenAI intent."""
+        result = await original(self, user_input)
+        _LOGGER.info("Error code: {}".format(result.response.error_code))
+        if result.response.error_code is not None:
+            return result
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload OpenAI."""
-    openai.api_key = None
-    openai.api_base = DEFAULT_BASE_URL
-    conversation.async_unset_agent(hass, entry)
-    return True
+        import json
+        _LOGGER.info(json.dumps(result.response.speech))
 
-
-class OpenAIAgent(conversation.AbstractConversationAgent):
-    """OpenAI conversation agent."""
-
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        """Initialize the agent."""
-        self.hass = hass
-        self.entry = entry
-        self.history: dict[str, list[dict]] = {}
-
-    @property
-    def attribution(self):
-        """Return the attribution."""
-        return {"name": "Powered by Custom LLM", "url": "https://github.com/kixsume/homeassistant-llm-conversation"}
-
-    @property
-    def supported_languages(self) -> list[str] | Literal["*"]:
-        """Return a list of supported languages."""
-        return MATCH_ALL
-
-    async def async_process(
-        self, user_input: conversation.ConversationInput
-    ) -> conversation.ConversationResult:
-        """Process a sentence."""
-        raw_prompt = self.entry.options.get(CONF_PROMPT, DEFAULT_PROMPT)
-        model = self.entry.options.get(CONF_CHAT_MODEL, DEFAULT_CHAT_MODEL)
-        max_tokens = self.entry.options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
-        top_p = self.entry.options.get(CONF_TOP_P, DEFAULT_TOP_P)
-        temperature = self.entry.options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
-
-        if user_input.conversation_id in self.history:
-            conversation_id = user_input.conversation_id
-            messages = self.history[conversation_id]
-        else:
-            conversation_id = ulid.ulid()
-            try:
-                prompt = self._async_generate_prompt(raw_prompt)
-            except TemplateError as err:
-                _LOGGER.error("Error rendering prompt: %s", err)
-                intent_response = intent.IntentResponse(language=user_input.language)
-                intent_response.async_set_error(
-                    intent.IntentResponseErrorCode.UNKNOWN,
-                    f"Sorry, I had a problem with my template: {err}",
-                )
-                return conversation.ConversationResult(
-                    response=intent_response, conversation_id=conversation_id
-                )
-            messages = [{"role": "system", "content": prompt}]
-
-        messages.append({"role": "user", "content": user_input.text})
-
-        _LOGGER.debug("Prompt for %s: %s", model, messages)
-
-        try:
-            result = await openai.ChatCompletion.acreate(
-                model=model,
-                messages=messages,
-                max_tokens=max_tokens,
-                top_p=top_p,
-                temperature=temperature,
-                user=conversation_id,
-            )
-        except error.OpenAIError as err:
-            intent_response = intent.IntentResponse(language=user_input.language)
-            intent_response.async_set_error(
-                intent.IntentResponseErrorCode.UNKNOWN,
-                f"Sorry, I had a problem talking to the server: {err}",
-            )
-            return conversation.ConversationResult(
-                response=intent_response, conversation_id=conversation_id
-            )
-
-        _LOGGER.debug("Response %s", result)
-        response = result["choices"][0]["message"]
-        messages.append(response)
-        self.history[conversation_id] = messages
+        content = ""
+        segments = result.response.speech["plain"]["speech"].splitlines()
+        for segment in segments:
+            _LOGGER.info("Segment: {}".format(segment))
+            if segment.startswith("{"):
+                service_call = json.loads(segment)
+                service = service_call.pop("service")
+                if not service or not service_call:
+                    _LOGGER.info('Missing information')
+                    continue
+                await hass.services.async_call(
+                        service.split(".")[0],
+                        service.split(".")[1],
+                        service_call,
+                        blocking=True)
+            else:
+                content = "{} {}".format(content, segment)
 
         intent_response = intent.IntentResponse(language=user_input.language)
-        intent_response.async_set_speech(response["content"])
+        intent_response.async_set_speech(content)
         return conversation.ConversationResult(
-            response=intent_response, conversation_id=conversation_id
+            response=intent_response, conversation_id=result.conversation_id
         )
 
-    def _async_generate_prompt(self, raw_prompt: str) -> str:
-        """Generate a prompt for the user."""
-        return template.Template(raw_prompt, self.hass).async_render(
-            {
-                "ha_name": self.hass.config.location_name,
-            },
-            parse_result=False,
-        )
+
+    OpenAIAgent.async_process = async_process
+
+    return True
