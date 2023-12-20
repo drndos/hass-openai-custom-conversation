@@ -14,8 +14,18 @@ This will add a converstaion option to Home Assistant with any local running LLM
 
 This is going to be a two part installation and is going to look very different depending on how you want to install everything. 
 
-**Part 1 | Install Oobabooga's Text-Gen-WebUI**
+**Part 1 | Oobabooga's Text-Gen-WebUI**
+
+Step 1: Choose/Install Text-Gen-WebUI
 - I was able to get this running with Windows 11, but I wanted this on my Unraid server, so I opted for a dockerized version of text-gen-webui. I will be updating this guide once I get some more time.
+
+Step 2: Enable OpenAI API Extension
+- Enable the OpenAI API extension from the WebUI interface.
+- Save and restart from the UI
+- Check the logs for an OpenAI API compatible server address and it should look something like this http://0.0.0.0:5001/v1
+
+Step 3: (WIP) Edit Token Limits in OpenAI API extension config
+- Still working on the this part, but the max token size currently accepted is 8192 due to the API limitations. 
 
 **Part 2 | Install a Custom Component to Home Assisant**
 
@@ -27,14 +37,15 @@ Step 1: HACS
 - Select Integration from the second field.
 
 Step 2: Devices & Services
-- Open the devices & services menu from the settings menu
+- Open the devices & services menu from the settings menu.
 - Click on "Add Integration"
-- Search/Add Custom LLM Conversation
-- Restart Home Assistant Server
+- Search/Add Custom LLM Conversation.
+- Restart Home Assistant Server.
 
 Step 3: Fill Out Fields
 - First Field: Enter any random string.
-- Second Field: The Local IP address of your Oobabooga Text-Gen-WebUI installation.
+- Second Field: Enter the Local IP address of your Oobabooga Text-Gen-WebUI installation with the OpenAI API port. http://LOCAL_IP_ADDRESS:5001/v1
+- Save and continue.
 
 Step 4: Adjust Conversation Settings
 - Navigate to settings menu and click on Voice Assistants.
