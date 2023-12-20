@@ -1,0 +1,13 @@
+{
+  "domain": "custom_llm_conversation",
+  "name": "Custom LLM Conversation",
+  "codeowners": ["@kixsume"],
+  "config_flow": true,
+  "documentation": "https://github.com/kixsume/homeassistant-llm-conversation",
+  "dependencies": ["conversation"],
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/kixsume/homeassistant-llm-conversation/issues",
+  "requirements": ["openai==0.27.8"],
+  "version": "1.0"
+}
