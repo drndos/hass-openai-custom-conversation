@@ -30,6 +30,7 @@ Step 2: Devices & Services
 - Open the devices & services menu from the settings menu
 - Click on "Add Integration"
 - Search/Add Custom LLM Conversation
+- Restart Home Assistant Server
 
 Step 3: Fill Out Fields
 - First Field: Enter any random string.
